@@ -13,7 +13,7 @@ class ProgressCollectionViewCell: UICollectionViewCell {
         let progress = UIProgressView()
         progress.toAutoLayout()
         progress.layer.cornerRadius = 4
-        progress.tintColor = UIColor(red: 161, green: 22, blue: 204, alpha: 1.0)
+        progress.tintColor = commonColor
         return progress
     }()
     

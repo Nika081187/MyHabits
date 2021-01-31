@@ -32,7 +32,7 @@ class HabitsStore {
         
         for habit in habbitsList {
             if habit.isOn {
-                print(habit.habitId)
+//                print(habit.habitId)
                 HabitsStore.progressCount = HabitsStore.progressCount + 1
             }
         }

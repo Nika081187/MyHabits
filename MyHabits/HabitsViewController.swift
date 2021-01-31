@@ -16,7 +16,7 @@ class HabitsViewController: UIViewController {
         button.toAutoLayout()
         button.backgroundColor = .none
         button.setImage(#imageLiteral(resourceName: "add_icon"), for: .normal)
-        button.addTarget(self, action: #selector(addHabit), for:.touchUpInside)
+        button.addTarget(self, action: #selector(addHabitClicked), for:.touchUpInside)
         return button
     }()
     
@@ -32,7 +32,7 @@ class HabitsViewController: UIViewController {
     private lazy var habitsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.register(HabitCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: HabitCollectionViewCell.self))
+        cv.register(HabitsCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: HabitsCollectionViewCell.self))
         cv.register(ProgressCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ProgressCollectionViewCell.self))
         cv.dataSource = self
         cv.delegate = self
@@ -91,8 +91,11 @@ class HabitsViewController: UIViewController {
         ])
     }
 
-    @objc func addHabit() {
-        print("Add habit!")
+    @objc func addHabitClicked() {
+        print("Add habit clicked!")
+
+        let navigationController = UINavigationController(rootViewController: HabitViewController())
+        self.navigationController?.present(navigationController, animated: true, completion: nil)
     }
 }
 
@@ -112,7 +115,7 @@ extension HabitsViewController: UICollectionViewDataSource {
             newCell = cell
         } else {
             let habit = HabitsStore().habbitsList[indexPath.item - 1]
-            let cell: HabitCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitCollectionViewCell.self), for: indexPath) as! HabitCollectionViewCell
+            let cell: HabitsCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as! HabitsCollectionViewCell
             cell.configure(color: habit.color, name: habit.habitId, time: habit.date, inRow: habit.inRow, isOn: habit.isOn)
             newCell = cell
         }
