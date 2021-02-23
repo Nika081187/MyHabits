@@ -161,7 +161,7 @@ class HabitViewController: UIViewController {
     }
     
     @objc func onCancelClicked() {
-        print("Close habit creating!")
+        print("Нажали Отменить создание привычки!")
         dismiss(animated: true, completion: nil)
     }
     
@@ -176,7 +176,7 @@ class HabitViewController: UIViewController {
              habitNameTextField.layer.borderColor = UIColor.red.cgColor
              habitNameTextField.placeholder = "Имя привычки не заполнено"
         }
-        print("New habit created!")
+        print("Новая привычка создана")
     }
     
     @objc func dismissKeyboard() {

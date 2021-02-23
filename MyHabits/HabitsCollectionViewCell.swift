@@ -9,11 +9,11 @@ import UIKit
 
 class HabitsCollectionViewCell: UICollectionViewCell {
     var habitIsOn: Bool = false
+    var habit: Habit?
     
     private lazy var checkboxImage: UIImageView = {
         let image = UIImageView()
         image.toAutoLayout()
-        image.contentMode = .scaleAspectFill
         image.layer.cornerRadius = 18
         return image
     }()
@@ -41,25 +41,28 @@ class HabitsCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    public func configure(color: UIColor, name: String, time: Date, inRow: Int, isOn: Bool){
+    public func configure(habit: Habit){
+        self.habit = habit
         let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: time)
-        let minutes = calendar.component(.minute, from: time)
+        let hour = calendar.component(.hour, from: habit.date)
+        let minutes = calendar.component(.minute, from: habit.date)
         
-        self.habitIsOn = isOn
+        self.habitIsOn = habit.isAlreadyTakenToday
         
-        checkboxImage.backgroundColor = color
+        checkboxImage.backgroundColor = habit.color
         
-        if isOn {
-            checkboxImage.image = UIImage(systemName: "checkmark.circle")
+        if habit.isAlreadyTakenToday {
+            checkboxImage.image = UIImage(systemName: "checkmark")
+            checkboxImage.contentMode = .center
         } else {
-            checkboxImage.image = UIImage(systemName: "checkmark.circle.fill")
+            checkboxImage.image = UIImage(systemName: "circle.fill")
+            checkboxImage.contentMode = .scaleAspectFit
         }
 
-        habiNameLabel.text = name
-        habiNameLabel.textColor = color
-        inRowLabel.text = "Подряд \(inRow)"
-        habitTimeLabel.text =  "Каждый день в \(hour):\(minutes)"
+        habiNameLabel.text = habit.name
+        habiNameLabel.textColor = habit.color
+        inRowLabel.text = "Подряд \(habit.trackDates.count)"
+        habitTimeLabel.text = habit.dateString
     }
     
     override init(frame: CGRect) {
@@ -99,12 +102,13 @@ class HabitsCollectionViewCell: UICollectionViewCell {
 
         if !habitIsOn {
             habitIsOn = true
-            checkboxImage.image = UIImage(systemName: "checkmark.circle")
-
+            checkboxImage.image = UIImage(systemName: "checkmark")
+            checkboxImage.contentMode = .center
+            HabitsStore.shared.track(habit!)
         } else {
             habitIsOn = false
-            checkboxImage.image = UIImage(systemName: "checkmark.circle.fill")
-//            HabitsStore.shared.habits[indexPath![1]].trackDates.append(Date())
+            checkboxImage.image = UIImage(systemName: "circle.fill")
+            checkboxImage.contentMode = .scaleAspectFit
         }
         print("Habit Is On: \(habitIsOn)")
     }

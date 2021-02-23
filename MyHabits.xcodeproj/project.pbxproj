@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		280FE3E925E50D5800F47BD6 /* HabitDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280FE3E825E50D5800F47BD6 /* HabitDetailsViewController.swift */; };
 		2811A52525B7EC4000186A6D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2811A52425B7EC4000186A6D /* AppDelegate.swift */; };
 		2811A52725B7EC4000186A6D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2811A52625B7EC4000186A6D /* SceneDelegate.swift */; };
 		2811A52925B7EC4000186A6D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2811A52825B7EC4000186A6D /* ViewController.swift */; };
@@ -24,6 +25,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		280FE3E825E50D5800F47BD6 /* HabitDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitDetailsViewController.swift; sourceTree = "<group>"; };
 		2811A52125B7EC4000186A6D /* MyHabits.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyHabits.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2811A52425B7EC4000186A6D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2811A52625B7EC4000186A6D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				2811A54025B7FF5200186A6D /* HabitsViewController.swift */,
 				2811A52825B7EC4000186A6D /* ViewController.swift */,
 				28174BFC25B9F1EF00C7063C /* HabitsCollectionViewCell.swift */,
+				280FE3E825E50D5800F47BD6 /* HabitDetailsViewController.swift */,
 				28174CF925BC96BC00C7063C /* infoText.txt */,
 				28174CED25BC4A1300C7063C /* ProgressCollectionViewCell.swift */,
 				2811A54325B7FF5D00186A6D /* InfoViewController.swift */,
@@ -166,6 +169,7 @@
 				2811A52925B7EC4000186A6D /* ViewController.swift in Sources */,
 				28174BFD25B9F1EF00C7063C /* HabitsCollectionViewCell.swift in Sources */,
 				2811A52525B7EC4000186A6D /* AppDelegate.swift in Sources */,
+				280FE3E925E50D5800F47BD6 /* HabitDetailsViewController.swift in Sources */,
 				2811A54125B7FF5200186A6D /* HabitsViewController.swift in Sources */,
 				28174CEE25BC4A1300C7063C /* ProgressCollectionViewCell.swift in Sources */,
 				28174D0125BDD22100C7063C /* Global.swift in Sources */,

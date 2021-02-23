@@ -20,15 +20,6 @@ class HabitsViewController: UIViewController {
         return button
     }()
     
-    private lazy var todayLabel: UILabel = {
-        let label = UILabel()
-        label.toAutoLayout()
-        label.text = "Сегодня"
-        label.textColor = .black
-        label.font = UIFont.boldSystemFont(ofSize: 20)
-        return label
-    }()
-    
     private lazy var habitsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -50,15 +41,34 @@ class HabitsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureNavigation()
         view.addSubview(contentView)
-        contentView.addSubview(todayLabel)
-        todayLabelConstraints()
-        
-        contentView.addSubview(addButton)
-        addButtonConstraints()
-        
         contentView.addSubview(habitsCollectionView)
         setupLayout()
+    }
+    
+    private lazy var todayLabel: UILabel = {
+        let label = UILabel()
+        label.toAutoLayout()
+        label.text = "Сегодня"
+        label.numberOfLines = 0
+        label.textColor = .black
+        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    func configureNavigation() {
+        self.navigationController?.navigationBar.isHidden = false
+
+        self.navigationItem.titleView = todayLabel
+
+        let rightBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItem.Style.plain, target: self, action: #selector(addHabitClicked))
+        
+        rightBarButtonItem.image = UIImage(systemName: "plus")
+        rightBarButtonItem.tintColor = commonColor
+        
+        self.navigationItem.rightBarButtonItem = rightBarButtonItem
     }
     
     func setupLayout() {
@@ -68,7 +78,7 @@ class HabitsViewController: UIViewController {
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            habitsCollectionView.topAnchor.constraint(equalTo: todayLabel.bottomAnchor, constant: 22),
+            habitsCollectionView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
             habitsCollectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             habitsCollectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             habitsCollectionView.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor),
@@ -83,17 +93,9 @@ class HabitsViewController: UIViewController {
             addButton.widthAnchor.constraint(equalToConstant: 20)
         ])
     }
-    
-    func todayLabelConstraints() {
-        NSLayoutConstraint.activate([
-            todayLabel.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 60),
-            todayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-        ])
-    }
 
     @objc func addHabitClicked() {
-        print("Add habit clicked!")
-
+        print("Нажали кнопку Добавить привычку!")
         let navigationController = UINavigationController(rootViewController: HabitViewController())
         self.navigationController?.present(navigationController, animated: true, completion: nil)
     }
@@ -103,7 +105,16 @@ extension HabitsViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         print("Количество привычек: \(HabitsStore.shared.habits.count)")
-        return HabitsStore.shared.habits.count
+        return HabitsStore.shared.habits.count + 1
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("Выбрали привычеку: \(indexPath.item - 1)")
+        if indexPath.item == 0 { return }
+        let habit = HabitsStore.shared.habits[indexPath.item - 1]
+        let vc = HabitDetailsViewController(habit: habit)
+        vc.modalPresentationStyle = .fullScreen
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -114,10 +125,15 @@ extension HabitsViewController: UICollectionViewDataSource {
 
             cell.configure(procent: HabitsStore.shared.todayProgress)
             newCell = cell
-        } else {
+        } else if indexPath.item < HabitsStore.shared.habits.count {
             let habit = HabitsStore.shared.habits[indexPath.item - 1]
             let cell: HabitsCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as! HabitsCollectionViewCell
-            cell.configure(color: habit.color, name: habit.name, time: habit.date, inRow: 0, isOn: habit.isAlreadyTakenToday)
+            cell.configure(habit: habit)
+            newCell = cell
+        } else {
+            let habit = HabitsStore.shared.habits[indexPath.item - 1]
+            let cell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as! HabitsCollectionViewCell
+            cell.configure(habit: habit)
             newCell = cell
         }
         return newCell
