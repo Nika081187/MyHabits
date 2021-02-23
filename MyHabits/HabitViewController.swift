@@ -10,7 +10,7 @@ import UIKit
 class HabitViewController: UIViewController {
     
     var dateFormatter = DateFormatter()
-    var strDate: String = ""
+    var habitDate: Date = Date()
     
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -39,6 +39,11 @@ class HabitViewController: UIViewController {
         textField.placeholder = "Бегать по утрам, спать 8 часов и т.п."
         textField.font = UIFont.systemFont(ofSize: 17)
         textField.textColor = .black
+        textField.layer.masksToBounds = false
+        textField.layer.cornerRadius = 8
+        let paddingView: UIView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 20))
+        textField.leftView = paddingView
+        textField.leftViewMode = .always
         textField.toAutoLayout()
         return textField
     }()
@@ -80,13 +85,12 @@ class HabitViewController: UIViewController {
     
     private lazy var everyDayLabel: UILabel = {
         let label = UILabel()
-        strDate = dateFormatter.string(from: datePicker.date)
-
+        habitDate = datePicker.date
         label.font = UIFont.systemFont(ofSize: 17)
 
-        let stringValue = "Каждый день в \(strDate)"
+        let stringValue = "Каждый день в \(dateFormatter.string(from: habitDate))"
         let attributedString: NSMutableAttributedString = NSMutableAttributedString(string: stringValue)
-        attributedString.setColor(color: commonColor, forText: strDate)
+        attributedString.setColor(color: commonColor, forText: dateFormatter.string(from: habitDate))
         label.attributedText = attributedString
 
         label.toAutoLayout()
@@ -104,13 +108,10 @@ class HabitViewController: UIViewController {
     }()
     
     @objc func dateChanged(_ sender: UIDatePicker) {
-
-        strDate = dateFormatter.string(from: sender.date)
-
-        print("Время изменилось на \(strDate)")
-        let stringValue = "Каждый день в \(strDate)"
+        habitDate = sender.date
+        let stringValue = "Каждый день в \(dateFormatter.string(from: habitDate))"
         let attributedString: NSMutableAttributedString = NSMutableAttributedString(string: stringValue)
-        attributedString.setColor(color: commonColor, forText: strDate)
+        attributedString.setColor(color: commonColor, forText: dateFormatter.string(from: habitDate))
         everyDayLabel.attributedText = attributedString
     }
     
@@ -165,7 +166,16 @@ class HabitViewController: UIViewController {
     }
     
     @objc func onCreateClicked() {
-        dismiss(animated: true, completion: nil)
+        if habitNameTextField.text != nil && !habitNameTextField.text!.isEmpty {
+            let newHabit = Habit(name: habitNameTextField.text!, date: habitDate, color: colorButton.backgroundColor!)
+            HabitsStore.shared.habits.append(newHabit)
+            HabitsStore.shared.save()
+            dismiss(animated: true, completion: nil)
+        } else {
+             habitNameTextField.layer.borderWidth = 1
+             habitNameTextField.layer.borderColor = UIColor.red.cgColor
+             habitNameTextField.placeholder = "Имя привычки не заполнено"
+        }
         print("New habit created!")
     }
     
@@ -224,6 +234,7 @@ class HabitViewController: UIViewController {
     func habitNameTextFieldConstraints() {
         NSLayoutConstraint.activate([
             habitNameTextField.topAnchor.constraint(equalTo: habitNameLabel.bottomAnchor, constant: 7),
+            habitNameTextField.heightAnchor.constraint(equalToConstant: 30),
             habitNameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
             habitNameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
         ])

@@ -46,7 +46,8 @@ class HabitsCollectionViewCell: UICollectionViewCell {
         let hour = calendar.component(.hour, from: time)
         let minutes = calendar.component(.minute, from: time)
         
-        self.habitIsOn = HabitsStore().getHabitBy(name: name).isOn
+        self.habitIsOn = isOn
+        
         checkboxImage.backgroundColor = color
         
         if isOn {
@@ -92,7 +93,9 @@ class HabitsCollectionViewCell: UICollectionViewCell {
         checkboxImage.isUserInteractionEnabled = true
     }
     
-    @objc func tapCheckboxImage() {
+    @objc func tapCheckboxImage(_ sender: AnyObject) {
+
+        self.indexPath.flatMap { print($0) }
 
         if !habitIsOn {
             habitIsOn = true
@@ -101,6 +104,7 @@ class HabitsCollectionViewCell: UICollectionViewCell {
         } else {
             habitIsOn = false
             checkboxImage.image = UIImage(systemName: "checkmark.circle.fill")
+//            HabitsStore.shared.habits[indexPath![1]].trackDates.append(Date())
         }
         print("Habit Is On: \(habitIsOn)")
     }
@@ -143,5 +147,15 @@ class HabitsCollectionViewCell: UICollectionViewCell {
             inRowLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
             inRowLabel.leadingAnchor.constraint(equalTo: habiNameLabel.leadingAnchor),
         ])
+    }
+}
+
+extension UICollectionViewCell {
+    var tableView: UICollectionView? {
+        return self.next(of: UICollectionView.self)
+    }
+
+    var indexPath: IndexPath? {
+        return self.tableView?.indexPath(for: self)
     }
 }

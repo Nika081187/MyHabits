@@ -102,7 +102,8 @@ class HabitsViewController: UIViewController {
 extension HabitsViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return HabitsStore().habbitsList.count
+        print("Количество привычек: \(HabitsStore.shared.habits.count)")
+        return HabitsStore.shared.habits.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -111,12 +112,12 @@ extension HabitsViewController: UICollectionViewDataSource {
         if indexPath.item == 0 {
             let cell: ProgressCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ProgressCollectionViewCell.self), for: indexPath) as! ProgressCollectionViewCell
 
-            cell.configure(procent: 0.5)
+            cell.configure(procent: HabitsStore.shared.todayProgress)
             newCell = cell
         } else {
-            let habit = HabitsStore().habbitsList[indexPath.item - 1]
+            let habit = HabitsStore.shared.habits[indexPath.item - 1]
             let cell: HabitsCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as! HabitsCollectionViewCell
-            cell.configure(color: habit.color, name: habit.habitId, time: habit.date, inRow: habit.inRow, isOn: habit.isOn)
+            cell.configure(color: habit.color, name: habit.name, time: habit.date, inRow: 0, isOn: habit.isAlreadyTakenToday)
             newCell = cell
         }
         return newCell
@@ -140,5 +141,12 @@ extension HabitsViewController: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         UIEdgeInsets(top: baseOffset, left: baseOffset, bottom: baseOffset, right: baseOffset)
+    }
+}
+
+extension UIResponder {
+    
+    func next<U: UIResponder>(of type: U.Type = U.self) -> U? {
+        return self.next.flatMap({ $0 as? U ?? $0.next() })
     }
 }
