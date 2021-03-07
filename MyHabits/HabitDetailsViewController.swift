@@ -10,6 +10,7 @@ import UIKit
 class HabitDetailsViewController: UIViewController {
     var habit: Habit?
     private let table = UITableView(frame: .zero, style: .grouped)
+    public var habitsVc: HabitsViewController?
     
     init(habit: Habit) {
         self.habit = habit
@@ -63,8 +64,12 @@ class HabitDetailsViewController: UIViewController {
     }
    
     @objc func onEditClicked() {
-        print("Нажали Править привычку")
-        dismiss(animated: true, completion: nil)
+        print("Нажали кнопку Править привычку!")
+        let vc = HabitViewController()
+        vc.editingHabit = habit
+        vc.habitsVc = habitsVc
+        let navigationController = UINavigationController(rootViewController: vc)
+        self.navigationController?.present(navigationController, animated: true, completion: nil)
     }
 }
 
@@ -81,8 +86,14 @@ extension HabitDetailsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell()
-        cell.textLabel?.text = HabitsStore.shared.trackDateString(forIndex: indexPath.item)
+        let date = HabitsStore.shared.trackDateString(forIndex: indexPath.item)
+        cell.textLabel?.text = date
+        cell.textLabel?.textAlignment = .left
         cell.selectionStyle = .none
+        if HabitsStore.shared.habit(habit!, isTrackedIn: HabitsStore.shared.dates[indexPath.item]) {
+            cell.imageView?.image = UIImage(systemName: "checkmark")
+            cell.imageView?.tintColor = commonColor
+        }
         return cell
     }
     

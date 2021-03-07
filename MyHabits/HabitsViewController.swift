@@ -51,17 +51,17 @@ class HabitsViewController: UIViewController {
         let label = UILabel()
         label.toAutoLayout()
         label.text = "Сегодня"
+        label.textAlignment = .left
         label.numberOfLines = 0
         label.textColor = .black
         label.font = UIFont.boldSystemFont(ofSize: 20)
-        label.textAlignment = .left
         return label
     }()
     
     func configureNavigation() {
         self.navigationController?.navigationBar.isHidden = false
-
         self.navigationItem.titleView = todayLabel
+        navigationController?.navigationBar.prefersLargeTitles = true
 
         let rightBarButtonItem = UIBarButtonItem(title: "", style: UIBarButtonItem.Style.plain, target: self, action: #selector(addHabitClicked))
         
@@ -113,6 +113,7 @@ extension HabitsViewController: UICollectionViewDataSource {
         if indexPath.item == 0 { return }
         let habit = HabitsStore.shared.habits[indexPath.item - 1]
         let vc = HabitDetailsViewController(habit: habit)
+        vc.habitsVc = self
         vc.modalPresentationStyle = .fullScreen
         self.navigationController?.pushViewController(vc, animated: true)
     }

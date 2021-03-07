@@ -12,6 +12,9 @@ class HabitViewController: UIViewController {
     var dateFormatter = DateFormatter()
     var habitDate: Date = Date()
     
+    var editingHabit: Habit?
+    var habitsVc: HabitsViewController?
+    
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.toAutoLayout()
@@ -68,6 +71,46 @@ class HabitViewController: UIViewController {
         return button
     }()
     
+    private lazy var removeHabitButton: UIButton = {
+        let button = UIButton()
+        button.toAutoLayout()
+        button.setTitle("Удалить привычку", for: .normal)
+        button.setTitleColor(.red, for: .normal)
+        button.backgroundColor = .white
+        button.addTarget(self, action: #selector(onRemoveHabitClicked), for:.touchUpInside)
+        return button
+    }()
+    
+    @objc func onRemoveHabitClicked() {
+        print("Удаляем привычку")
+        showAlert()
+    }
+    
+    @IBAction func showAlert() {
+        if let habit = editingHabit {
+            let alertController = UIAlertController(title: "Удалить привычку", message: "Вы хотите удалить привычку \(habit.name)?", preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: "Отмена", style: .default, handler: cancelRemoveHabitAlert)
+
+            let deleteAction = UIAlertAction(title: "Удалить", style: .destructive, handler: removeHabit)
+            alertController.addAction(cancelAction)
+            alertController.addAction(deleteAction)
+            self.present(alertController, animated: true, completion: nil)
+        }
+    }
+    
+    func cancelRemoveHabitAlert(action: UIAlertAction) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func removeHabit(action: UIAlertAction) {
+        if let habit = editingHabit {
+            HabitsStore.shared.habits.removeAll(where: {$0.name == habit.name})
+            habitsVc!.dismiss(animated: true, completion: nil)
+            
+            // не работает закрытие второго окна
+        }
+    }
+    
     @objc func changeColor() {
         let picker = UIColorPickerViewController()
         picker.delegate = self
@@ -117,10 +160,45 @@ class HabitViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         view.backgroundColor = .white
         dateFormatter.dateFormat = "HH:mm a"
-        title = "Создать"
         
+        setupNavigation()
+        
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(habitNameLabel)
+        contentView.addSubview(habitNameTextField)
+        contentView.addSubview(colorLabel)
+        contentView.addSubview(colorButton)
+        contentView.addSubview(datePickerLabel)
+        contentView.addSubview(everyDayLabel)
+        contentView.addSubview(datePicker)
+        
+        setupLayout()
+        
+        habitNameLabelConstraints()
+        habitNameTextFieldConstraints()
+        colorLabelConstraints()
+        colorButtonConstraints()
+        datePickerLabelConstraints()
+        everyDayLabelConstraints()
+        datePickerConstraints()
+        
+        if let habit = editingHabit {
+            print("Правим привычку \(habit.name)")
+            title = "Править"
+            setEditingHabitData(habit: habit)
+            contentView.addSubview(removeHabitButton)
+            removeButtonConstraints()
+        } else {
+            print("Создаем новую привычку")
+            title = "Создать"
+        }
+    }
+    
+    func setupNavigation() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
 
@@ -139,25 +217,25 @@ class HabitViewController: UIViewController {
  
         self.navigationItem.leftBarButtonItem = leftBarButtonItem
         self.navigationItem.rightBarButtonItem = rightBarButtonItem
+    }
+    
+    private lazy var formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter
+    }()
+    
+    func setEditingHabitData(habit: Habit) {
+        habitNameTextField.text = habit.name
+        habitNameTextField.textColor = habit.color
+        colorButton.backgroundColor = habit.color
+
+        let attributedString: NSMutableAttributedString = NSMutableAttributedString(string: habit.dateString)
         
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-        contentView.addSubview(habitNameLabel)
-        contentView.addSubview(habitNameTextField)
-        contentView.addSubview(colorLabel)
-        contentView.addSubview(colorButton)
-        contentView.addSubview(datePickerLabel)
-        contentView.addSubview(everyDayLabel)
-        contentView.addSubview(datePicker)
+        attributedString.setColor(color: commonColor, forText: formatter.string(from: habit.date))
         
-        setupLayout()
-        habitNameLabelConstraints()
-        habitNameTextFieldConstraints()
-        colorLabelConstraints()
-        colorButtonConstraints()
-        datePickerLabelConstraints()
-        everyDayLabelConstraints()
-        datePickerConstraints()
+        everyDayLabel.attributedText = attributedString
+        datePicker.setDate(habit.date, animated: false)
     }
     
     @objc func onCancelClicked() {
@@ -168,8 +246,15 @@ class HabitViewController: UIViewController {
     @objc func onCreateClicked() {
         if habitNameTextField.text != nil && !habitNameTextField.text!.isEmpty {
             let newHabit = Habit(name: habitNameTextField.text!, date: habitDate, color: colorButton.backgroundColor!)
+            if let habit = editingHabit {
+                print("Отредактировали привычку")
+                newHabit.trackDates = habit.trackDates
+                HabitsStore.shared.habits.removeAll(where: {$0.name == habit.name})
+            }
+            print("Создали привычку")
             HabitsStore.shared.habits.append(newHabit)
             HabitsStore.shared.save()
+
             dismiss(animated: true, completion: nil)
         } else {
              habitNameTextField.layer.borderWidth = 1
@@ -257,6 +342,15 @@ class HabitViewController: UIViewController {
         ])
     }
     
+    func removeButtonConstraints() {
+        NSLayoutConstraint.activate([
+            removeHabitButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
+            removeHabitButton.heightAnchor.constraint(equalToConstant: 50),
+            removeHabitButton.widthAnchor.constraint(equalToConstant: 200),
+                                        removeHabitButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+    }
+    
     func datePickerLabelConstraints() {
         NSLayoutConstraint.activate([
             datePickerLabel.topAnchor.constraint(equalTo: colorButton.bottomAnchor, constant: 15),
@@ -290,13 +384,8 @@ extension NSMutableAttributedString {
 }
 
 extension HabitViewController: UIColorPickerViewControllerDelegate {
-    
-    func colorPickerViewControllerDidFinish(_ viewController: UIColorPickerViewController) {
-        self.view.backgroundColor = viewController.selectedColor
-    }
 
     func colorPickerViewControllerDidSelectColor(_ viewController: UIColorPickerViewController) {
-        self.view.backgroundColor = viewController.selectedColor
         colorButton.backgroundColor = viewController.selectedColor
     }
 }
