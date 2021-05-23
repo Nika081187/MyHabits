@@ -139,6 +139,10 @@ extension HabitsViewController: UICollectionViewDataSource {
         }
         return newCell
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        habitsCollectionView.reloadData()
+    }
 }
 
 extension HabitsViewController: UICollectionViewDelegateFlowLayout {
