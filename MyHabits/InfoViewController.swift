@@ -9,6 +9,10 @@ import UIKit
 
 class InfoViewController: UIViewController {
     
+    private enum Constants {
+        static let baseOffset: CGFloat = 16.0
+    }
+    
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.toAutoLayout()
@@ -80,14 +84,14 @@ class InfoViewController: UIViewController {
     func infoTitleLabelConstraints() {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 22),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
     
     func infoTextLabelConstraints() {
         NSLayoutConstraint.activate([
-            infoLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: baseOffset),
+            infoLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: Constants.baseOffset),
             infoLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             infoLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
             infoLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -22),
@@ -99,8 +103,8 @@ class InfoViewController: UIViewController {
                 fatalError("File not found")
         }
         let contentData = FileManager.default.contents(atPath: fileURL.path)
-        guard let text = String(data: contentData!, encoding: String.Encoding.utf8) else {
-            fatalError("Не смогли получить контент файла!")
+        guard let data = contentData, let text = String(data: data, encoding: String.Encoding.utf8) else {
+            fatalError("Не смогли получить контент файла")
         }
         return text
     }

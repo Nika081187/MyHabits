@@ -7,9 +7,17 @@
 
 import UIKit
 
-let baseOffset: CGFloat = 16.0
-
-class HabitsViewController: UIViewController {
+class HabitsViewController: UIViewController, UpdateHabitsCollectionViewProtocol {
+    
+    private enum Constants {
+        static let baseOffset: CGFloat = 16.0
+    }
+    
+    func reload() {
+        self.habitsCollectionView.reloadData()
+        print("Обновляем habits collection view: \(HabitsStore.shared.habits.count)")
+        print("Обновляем прогресс: \(HabitsStore.shared.todayProgress)")
+    }
     
     private lazy var addButton: UIButton = {
         let button = UIButton()
@@ -25,8 +33,6 @@ class HabitsViewController: UIViewController {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.register(HabitsCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: HabitsCollectionViewCell.self))
         cv.register(ProgressCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: ProgressCollectionViewCell.self))
-        cv.dataSource = self
-        cv.delegate = self
         cv.backgroundColor = .systemGray6
         cv.toAutoLayout()
         return cv
@@ -45,6 +51,9 @@ class HabitsViewController: UIViewController {
         view.addSubview(contentView)
         contentView.addSubview(habitsCollectionView)
         setupLayout()
+        
+        habitsCollectionView.dataSource = self
+        habitsCollectionView.delegate = self
     }
     
     private lazy var todayLabel: UILabel = {
@@ -87,15 +96,15 @@ class HabitsViewController: UIViewController {
     
     func addButtonConstraints() {
         NSLayoutConstraint.activate([
-            addButton.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: baseOffset),
-            addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            addButton.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: Constants.baseOffset),
+            addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
             addButton.heightAnchor.constraint(equalToConstant: 20),
             addButton.widthAnchor.constraint(equalToConstant: 20)
         ])
     }
 
     @objc func addHabitClicked() {
-        print("Нажали кнопку Добавить привычку!")
+        print("Нажали кнопку Добавить привычку")
         let navigationController = UINavigationController(rootViewController: HabitViewController())
         self.navigationController?.present(navigationController, animated: true, completion: nil)
     }
@@ -109,7 +118,7 @@ extension HabitsViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("Выбрали привычеку: \(indexPath.item - 1)")
+        print("Выбрали привычку: \(indexPath.item - 1)")
         if indexPath.item == 0 { return }
         let habit = HabitsStore.shared.habits[indexPath.item - 1]
         let vc = HabitDetailsViewController(habit: habit)
@@ -122,32 +131,33 @@ extension HabitsViewController: UICollectionViewDataSource {
         
         let newCell: UICollectionViewCell
         if indexPath.item == 0 {
-            let cell: ProgressCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ProgressCollectionViewCell.self), for: indexPath) as! ProgressCollectionViewCell
-
+            guard let cell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ProgressCollectionViewCell.self), for: indexPath) as? ProgressCollectionViewCell else {
+                fatalError()
+            }
             cell.configure(procent: HabitsStore.shared.todayProgress)
             newCell = cell
         } else if indexPath.item < HabitsStore.shared.habits.count {
             let habit = HabitsStore.shared.habits[indexPath.item - 1]
-            let cell: HabitsCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as! HabitsCollectionViewCell
+            guard let cell: HabitsCollectionViewCell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as? HabitsCollectionViewCell else {
+                fatalError()
+            }
             cell.configure(habit: habit)
             newCell = cell
         } else {
             let habit = HabitsStore.shared.habits[indexPath.item - 1]
-            let cell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as! HabitsCollectionViewCell
+            guard let cell = habitsCollectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HabitsCollectionViewCell.self), for: indexPath) as? HabitsCollectionViewCell else {
+                fatalError()
+            }
             cell.configure(habit: habit)
             newCell = cell
         }
         return newCell
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        habitsCollectionView.reloadData()
-    }
 }
 
 extension HabitsViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = collectionView.frame.width - baseOffset*2
+        let width = collectionView.frame.width - Constants.baseOffset*2
         let height = indexPath.item == 0 ? CGFloat(60) : CGFloat(130)
         return CGSize(width: width, height: height)
     }
@@ -157,11 +167,11 @@ extension HabitsViewController: UICollectionViewDelegateFlowLayout {
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return baseOffset
+        return Constants.baseOffset
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        UIEdgeInsets(top: baseOffset, left: baseOffset, bottom: baseOffset, right: baseOffset)
+        UIEdgeInsets(top: Constants.baseOffset, left: Constants.baseOffset, bottom: Constants.baseOffset, right: Constants.baseOffset)
     }
 }
 

@@ -18,13 +18,16 @@ class HabitDetailsViewController: UIViewController {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("Этот инит не работает!")
+        fatalError("Этот инит не работает")
     }
     
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.toAutoLayout()
-        label.text = habit!.name
+        guard let myHabit = habit else {
+            return label
+        }
+        label.text = myHabit.name
         label.textColor = .black
         label.font = UIFont.boldSystemFont(ofSize: 17)
         label.textAlignment = .left
@@ -64,7 +67,7 @@ class HabitDetailsViewController: UIViewController {
     }
    
     @objc func onEditClicked() {
-        print("Нажали кнопку Править привычку!")
+        print("Нажали кнопку Править привычку")
         let vc = HabitViewController()
         vc.editingHabit = habit
         vc.habitsVc = habitsVc
@@ -90,9 +93,11 @@ extension HabitDetailsViewController: UITableViewDataSource {
         cell.textLabel?.text = date
         cell.textLabel?.textAlignment = .left
         cell.selectionStyle = .none
-        if HabitsStore.shared.habit(habit!, isTrackedIn: HabitsStore.shared.dates[indexPath.item]) {
-            cell.imageView?.image = UIImage(systemName: "checkmark")
-            cell.imageView?.tintColor = commonColor
+        if let myHabit = habit {
+            if HabitsStore.shared.habit(myHabit, isTrackedIn: HabitsStore.shared.dates[indexPath.item]) {
+                cell.imageView?.image = UIImage(systemName: "checkmark")
+                cell.imageView?.tintColor = commonColor
+            }
         }
         return cell
     }

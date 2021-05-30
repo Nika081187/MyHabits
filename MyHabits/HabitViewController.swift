@@ -7,7 +7,17 @@
 
 import UIKit
 
+protocol UpdateHabitsCollectionViewProtocol {
+    func reload()
+}
+
 class HabitViewController: UIViewController {
+    
+    private enum Constants {
+        static let baseOffset: CGFloat = 16.0
+    }
+    
+    var receiverOfOrderViaElevator: UpdateHabitsCollectionViewProtocol?
     
     var dateFormatter = DateFormatter()
     var habitDate: Date = Date()
@@ -105,8 +115,11 @@ class HabitViewController: UIViewController {
     func removeHabit(action: UIAlertAction) {
         if let habit = editingHabit {
             HabitsStore.shared.habits.removeAll(where: {$0.name == habit.name})
-            habitsVc!.dismiss(animated: true, completion: nil)
-            
+            guard let vc = habitsVc else {
+                return
+            }
+            vc.dismiss(animated: true, completion: nil)
+            receiverOfOrderViaElevator?.reload()
             // не работает закрытие второго окна
         }
     }
@@ -163,6 +176,7 @@ class HabitViewController: UIViewController {
         
         view.backgroundColor = .white
         dateFormatter.dateFormat = "HH:mm a"
+        receiverOfOrderViaElevator = HabitsViewController()
         
         setupNavigation()
         
@@ -239,13 +253,13 @@ class HabitViewController: UIViewController {
     }
     
     @objc func onCancelClicked() {
-        print("Нажали Отменить создание привычки!")
+        print("Нажали Отменить создание привычки")
         dismiss(animated: true, completion: nil)
     }
     
     @objc func onCreateClicked() {
-        if habitNameTextField.text != nil && !habitNameTextField.text!.isEmpty {
-            let newHabit = Habit(name: habitNameTextField.text!, date: habitDate, color: colorButton.backgroundColor!)
+        if let habitNameTextFieldText = habitNameTextField.text, !habitNameTextFieldText.isEmpty, let color = colorButton.backgroundColor {
+            let newHabit = Habit(name: habitNameTextFieldText, date: habitDate, color: color)
             if let habit = editingHabit {
                 print("Отредактировали привычку")
                 newHabit.trackDates = habit.trackDates
@@ -254,7 +268,7 @@ class HabitViewController: UIViewController {
             print("Создали привычку")
             HabitsStore.shared.habits.append(newHabit)
             HabitsStore.shared.save()
-
+            receiverOfOrderViaElevator?.reload()
             dismiss(animated: true, completion: nil)
         } else {
              habitNameTextField.layer.borderWidth = 1
@@ -311,8 +325,8 @@ class HabitViewController: UIViewController {
     func habitNameLabelConstraints() {
         NSLayoutConstraint.activate([
             habitNameLabel.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 22),
-            habitNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            habitNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            habitNameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            habitNameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
     
@@ -320,16 +334,16 @@ class HabitViewController: UIViewController {
         NSLayoutConstraint.activate([
             habitNameTextField.topAnchor.constraint(equalTo: habitNameLabel.bottomAnchor, constant: 7),
             habitNameTextField.heightAnchor.constraint(equalToConstant: 30),
-            habitNameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            habitNameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            habitNameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            habitNameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
 
     func colorLabelConstraints() {
         NSLayoutConstraint.activate([
             colorLabel.topAnchor.constraint(equalTo: habitNameTextField.bottomAnchor, constant: 15),
-            colorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            colorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            colorLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            colorLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
     
@@ -338,7 +352,7 @@ class HabitViewController: UIViewController {
             colorButton.topAnchor.constraint(equalTo: colorLabel.bottomAnchor, constant: 7),
             colorButton.heightAnchor.constraint(equalToConstant: 30),
             colorButton.widthAnchor.constraint(equalToConstant: 30),
-            colorButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
+            colorButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
         ])
     }
     
@@ -354,24 +368,24 @@ class HabitViewController: UIViewController {
     func datePickerLabelConstraints() {
         NSLayoutConstraint.activate([
             datePickerLabel.topAnchor.constraint(equalTo: colorButton.bottomAnchor, constant: 15),
-            datePickerLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            datePickerLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            datePickerLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            datePickerLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
     
     func everyDayLabelConstraints() {
         NSLayoutConstraint.activate([
             everyDayLabel.topAnchor.constraint(equalTo: datePickerLabel.bottomAnchor, constant: 7),
-            everyDayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            everyDayLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            everyDayLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            everyDayLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
     
     func datePickerConstraints() {
         NSLayoutConstraint.activate([
             datePicker.topAnchor.constraint(equalTo: everyDayLabel.bottomAnchor, constant: 15),
-            datePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: baseOffset),
-            datePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(baseOffset)),
+            datePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constants.baseOffset),
+            datePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -(Constants.baseOffset)),
         ])
     }
 }

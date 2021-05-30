@@ -10,6 +10,7 @@ import UIKit
 class HabitsCollectionViewCell: UICollectionViewCell {
     var habitIsOn: Bool = false
     var habit: Habit?
+    var receiverOfOrderViaElevator: UpdateHabitsCollectionViewProtocol?
     
     private lazy var checkboxImage: UIImageView = {
         let image = UIImageView()
@@ -43,9 +44,6 @@ class HabitsCollectionViewCell: UICollectionViewCell {
     
     public func configure(habit: Habit){
         self.habit = habit
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: habit.date)
-        let minutes = calendar.component(.minute, from: habit.date)
         
         self.habitIsOn = habit.isAlreadyTakenToday
         
@@ -68,6 +66,7 @@ class HabitsCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupLayout()
+        receiverOfOrderViaElevator = HabitsViewController()
     }
     
     required init?(coder: NSCoder) {
@@ -104,13 +103,13 @@ class HabitsCollectionViewCell: UICollectionViewCell {
             habitIsOn = true
             checkboxImage.image = UIImage(systemName: "checkmark")
             checkboxImage.contentMode = .center
-            HabitsStore.shared.track(habit!)
-        } else {
-            habitIsOn = false
-            checkboxImage.image = UIImage(systemName: "circle.fill")
-            checkboxImage.contentMode = .scaleAspectFit
+            guard let myHabit = habit else {
+                return
+            }
+            HabitsStore.shared.track(myHabit)
+            print("Habit Is On: \(habitIsOn)")
+            receiverOfOrderViaElevator?.reload()
         }
-        print("Habit Is On: \(habitIsOn)")
     }
     
     func contentViewConstraints() {
